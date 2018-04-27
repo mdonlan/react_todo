@@ -18,18 +18,21 @@ class Home extends Component {
           editable: false,
           todoText: 'test1',
           key: shortid.generate(),
+          visible: true,
         },
         {
           completed: false,
           editable: false,
           todoText: 'test2',
           key: shortid.generate(),
+          visible: true,
         },
         {
           completed: false,
           editable: false,
           todoText: 'test3',
           key: shortid.generate(),
+          visible: true,
         },
       ],
       filteringCompleted: false,
@@ -42,6 +45,7 @@ class Home extends Component {
       editable: false,
       todoText: data,
       key: shortid.generate(),
+      visible: true,
     }
     // this is a prop callback for adding new notes to the state
     let allTodos = this.state.todos;
@@ -49,43 +53,56 @@ class Home extends Component {
     this.setState({todos: allTodos});
   }
 
-  deleteNote = (data) => {
+  deleteNote = (key) => {
     // callback for removing a note from the state
+
+    // get specific item in todos array based off item key
+    let todo = this.state.todos.find(function (item, index) { 
+      item.index = index;
+      return item.key === key; 
+    });
     
-    // remove the note by its index
+    //remove the note
     let allTodos = this.state.todos;
-    allTodos.splice(data, 1);
+    allTodos.splice(todo.index, 1);
     this.setState({todos: allTodos});
   }
 
-  completedNote = (data) => {
+  completedNote = (key) => {
     // callback for completing a todo
     
+    let todo = this.state.todos.find(function (item, index) { 
+      item.index = index;
+      return item.key === key; 
+    });
     // toggle complete status in the note by its index
     let allTodos = this.state.todos;
-    if(allTodos[data].completed === true) {
-      allTodos[data].completed = false;
+    if(allTodos[todo.index].completed === true) {
+      allTodos[todo.index].completed = false;
     } else {
-      allTodos[data].completed = true;
+      allTodos[todo.index].completed = true;
     }
-    if(allTodos[data].editable === true) {
-      allTodos[data].editable = false;
+    if(allTodos[todo.index].editable === true) {
+      allTodos[todo.index].editable = false;
     }
     
     this.setState({todos: allTodos});
   }
 
-  setEditMode = (data) => {
+  setEditMode = (key) => {
     // callback for completing a todo
-    
+    let todo = this.state.todos.find(function (item, index) { 
+      item.index = index;
+      return item.key === key; 
+    });
     // toggle complete status in the note by its index
     let allTodos = this.state.todos;
-    if(allTodos[data].editable === true) {
-      allTodos[data].editable = false;
+    if(allTodos[todo.index].editable === true) {
+      allTodos[todo.index].editable = false;
     } else {
       // if not already editable and not completed
-      if(allTodos[data].completed === false) {
-        allTodos[data].editable = true;
+      if(allTodos[todo.index].completed === false) {
+        allTodos[todo.index].editable = true;
       }
     }
     
@@ -94,14 +111,18 @@ class Home extends Component {
 
   saveEdit = (data) => {
     // update state w/ new note text and turn off editing
+    let todo = this.state.todos.find(function (item, index) { 
+      item.index = index;
+      return item.key === data[1]; 
+    });
+    
     let allTodos = this.state.todos;
-    allTodos[data[1]].todoText = data[0];
-    allTodos[data[1]].editable = false;
+    allTodos[todo.index].todoText = data[0];
+    allTodos[todo.index].editable = false;
     this.setState({todos: allTodos});   
   }
 
   toggleFilteringComplete = (data) => {
-    console.log(this.state)
     if(this.state.filteringCompleted === true) {
       this.setState({filteringCompleted: false});   
     } else {

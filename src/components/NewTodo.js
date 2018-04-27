@@ -37,7 +37,7 @@ class NewTodo extends Component {
   render() {
     return (
       <div className="newTodoContainer">
-        <input className="newTodoInput" type="text" name="newNoteText" onChange={this.handleChange} value={this.state.newNoteValue}/>
+        <input className="newTodoInput" type="text" name="newNoteText" onChange={this.handleChange} value={this.state.newNoteValue} placeholder="Add a new todo..." />
         <div className="newTodoSubmit" onClick={this.handleSubmit}>Submit</div>
       </div>
     )

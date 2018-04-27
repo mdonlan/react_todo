@@ -27,17 +27,17 @@ class AllTodos extends Component {
   }
 
   deleteTodo = (event) => {
-    this.props.deleteNote(event.target.dataset.index);
+    this.props.deleteNote(event.target.dataset.key);
   }
 
   completedTodo = (event) => {
-    this.props.completedNote(event.target.dataset.index);
+    this.props.completedNote(event.target.dataset.key);
   }
   
   setEditMode = (event) => {
     // turn on edit mode
     
-    this.props.setEditMode(event.target.dataset.index);
+    this.props.setEditMode(event.target.dataset.key);
     this.setState({tempNote: event.target.dataset.text});
   }
 
@@ -45,7 +45,7 @@ class AllTodos extends Component {
     // send new edit to parent to be added to state
     let tempEditData = [
       this.state.tempNote, 
-      event.target.dataset.index,
+      event.target.dataset.key,
     ]
    this.props.saveEdit(tempEditData);
 
@@ -58,8 +58,8 @@ class AllTodos extends Component {
   }
 
   filterTodos = (item) => {
+    
     // if todo is marked completed filter out of array
-    console.log(this.props.filteringCompleted)
     if(this.props.filteringCompleted === true) {
       return item.completed === false;
     } else {
@@ -72,19 +72,19 @@ class AllTodos extends Component {
     return (
       <div className="allTodosContainer">
         {this.props.allTodos.filter(this.filterTodos).map((todo, index) => {
-          if(this.state.filter) {
-            this.props.allTodos.filter(this.filterTodos);
-          }
           return (
             <div key={todo.key} className="todoItem">
               <div className="leftSideTodo">
-                <FontAwesomeIcon className={(todo.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} onClick={this.completedTodo} data-index={index} />
+                <div className="circleBackground">
+                  <FontAwesomeIcon className={(todo.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} onClick={this.completedTodo} data-key={todo.key} />
+                </div>
+                
                 <textarea disabled={todo.editable ? false : true} className={(todo.completed ? 'todoTextFaded' : 'todoText') + ' ' + (todo.editable ? 'editingTodo' : null)} defaultValue={todo.editable ? this.state.tempNote : todo.todoText} onChange={this.editedNote} ></textarea>
               </div>
               <div className="rightSideTodo">
-                <FontAwesomeIcon visibility={todo.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-index={index} />
-                <FontAwesomeIcon visibility={todo.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-index={index} data-text={todo.todoText} />
-                <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-index={index} />
+                <FontAwesomeIcon visibility={todo.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={todo.key} />
+                <FontAwesomeIcon visibility={todo.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-key={todo.key} data-text={todo.todoText} />
+                <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-key={todo.key} />
               </div>
             </div>
           )

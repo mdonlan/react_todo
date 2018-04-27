@@ -1,0 +1,9 @@
+.todoFiltersContainer {
+  margin-top: 25px;
+  margin-bottom: 25px;
+  display: flex;
+}
+
+.filterCompletedCheckbox {
+  margin-left: 10px;
+}

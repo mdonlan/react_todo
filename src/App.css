@@ -1,0 +1,11 @@
+.App {
+  height: 100%;
+  width: 100%;
+  background: #222222;
+  color: #dddddd;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 18px;
+}

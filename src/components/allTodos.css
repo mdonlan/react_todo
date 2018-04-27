@@ -1,0 +1,62 @@
+.allTodosContainer {
+  margin-top: 25px;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.todoItem {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: flex;
+  height: 30px;
+  width: 300px;
+}
+
+.leftSideTodo {
+  height: 100%;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 3px;
+}
+
+.rightSideTodo {
+  height: 100%;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 3px;
+}
+
+path {
+  pointer-events: none;
+}
+
+.button {
+  height: 50%;
+  width: 33%;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.completeButtonDefault {
+  opacity: 0.2;
+  color: #555555;
+}
+
+.completeButtonComplete {
+  opacity: 1;
+  color: #0fa566;
+}
+
+.editButton {
+
+}
+
+.deteleButton {
+
+}

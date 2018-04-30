@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import shortid from 'shortid';
+import moment from 'moment';
 
 import NewTodo from './NewTodo';
 import AllTodos from './AllTodos';
 import TodoFilters from './TodoFilters';
 
+import firebase from '../firebase.js';
 import './home.css';
 
 class Home extends Component {
@@ -12,45 +14,59 @@ class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      todos: [
-        {
-          completed: false,
-          editable: false,
-          todoText: 'test1',
-          key: shortid.generate(),
-          visible: true,
-        },
-        {
-          completed: false,
-          editable: false,
-          todoText: 'test2',
-          key: shortid.generate(),
-          visible: true,
-        },
-        {
-          completed: false,
-          editable: false,
-          todoText: 'test3',
-          key: shortid.generate(),
-          visible: true,
-        },
-      ],
+      todos: [],
       filteringCompleted: false,
+      searchQuery: '',
     };
   }
 
+  componentDidMount() {
+    // get reference to firebase db
+    const todosDB = firebase.database().ref('todos');
+    // setup firebase event watcher
+    // fires anytime a change is detected in todosDB
+    todosDB.on('value', (snapshot) => {
+      let todos = snapshot.val();
+      let allTodos = [];
+      if(todos) {
+        Object.keys(todos).forEach(function(obj) {
+          // push each todo from the db to array
+          allTodos.push(todos[obj])
+        });
+        this.setState({ todos: allTodos })
+      }
+    });
+  }
+
   createNewNote = (data) => {
+    let createdAt = moment().format("dddd, MMMM Do YYYY, h:mm:ss a");
     let newNote = {
       completed: false,
       editable: false,
       todoText: data,
       key: shortid.generate(),
       visible: true,
+      created: createdAt,
     }
     // this is a prop callback for adding new notes to the state
     let allTodos = this.state.todos;
     allTodos.push(newNote);
     this.setState({todos: allTodos});
+
+    // get reference to firebase db
+    const todosDB = firebase.database().ref('todos');
+    
+    // push new todo to firebase db
+    // on callback from db get key and then 
+    // push the todo to the server again w/ key 
+    todosDB.push(newNote)
+      .then(res => {
+        let key = res.getKey();
+        firebase.database().ref().child('/todos/' + key)
+          .update({ dbKey: key});
+      })
+
+    
   }
 
   deleteNote = (key) => {
@@ -61,11 +77,9 @@ class Home extends Component {
       item.index = index;
       return item.key === key; 
     });
-    
-    //remove the note
-    let allTodos = this.state.todos;
-    allTodos.splice(todo.index, 1);
-    this.setState({todos: allTodos});
+
+    const todoRef = firebase.database().ref(`/todos/` + todo.dbKey);
+    todoRef.remove();
   }
 
   completedNote = (key) => {
@@ -75,18 +89,19 @@ class Home extends Component {
       item.index = index;
       return item.key === key; 
     });
-    // toggle complete status in the note by its index
-    let allTodos = this.state.todos;
-    if(allTodos[todo.index].completed === true) {
-      allTodos[todo.index].completed = false;
+   
+    // toggle completed
+    let isCompleted;
+    if(todo.completed === true) {
+      isCompleted = false;
     } else {
-      allTodos[todo.index].completed = true;
+      isCompleted = true;
     }
-    if(allTodos[todo.index].editable === true) {
-      allTodos[todo.index].editable = false;
-    }
-    
-    this.setState({todos: allTodos});
+
+    // set updated completed state to db
+    let dbKey = todo.dbKey;
+    firebase.database().ref().child('/todos/' + dbKey)
+      .update({ completed: isCompleted});
   }
 
   setEditMode = (key) => {
@@ -115,19 +130,24 @@ class Home extends Component {
       item.index = index;
       return item.key === data[1]; 
     });
+
+    let key = todo.dbKey;
+    firebase.database().ref().child('/todos/' + key)
+      .update({ todoText: data[0], editable: false});
     
-    let allTodos = this.state.todos;
-    allTodos[todo.index].todoText = data[0];
-    allTodos[todo.index].editable = false;
-    this.setState({todos: allTodos});   
+ 
   }
 
-  toggleFilteringComplete = (data) => {
+  toggleFilteringComplete = () => {
     if(this.state.filteringCompleted === true) {
       this.setState({filteringCompleted: false});   
     } else {
       this.setState({filteringCompleted: true});   
     }
+  }
+
+  updateSearchQuery = (data) => {
+    this.setState({searchQuery: data});
   }
 
   render() {
@@ -139,6 +159,7 @@ class Home extends Component {
         <TodoFilters 
           filteringCompleted={this.state.filteringCompleted}
           toggleFilteringComplete={this.toggleFilteringComplete}
+          updateSearchQuery={this.updateSearchQuery}
         />
         <AllTodos 
           allTodos={this.state.todos}
@@ -147,6 +168,7 @@ class Home extends Component {
           setEditMode={this.setEditMode}
           saveEdit={this.saveEdit}
           filteringCompleted={this.state.filteringCompleted}
+          searchQuery={this.state.searchQuery}
         />
       </div>
     )

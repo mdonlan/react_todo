@@ -99,4 +99,14 @@ textarea {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+}
+
+.circleClickZone {
+  height: 25px;
+  width: 25px;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 1;
+  cursor: pointer;
 }

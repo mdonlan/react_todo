@@ -8,15 +8,20 @@ class TodoFilters extends Component {
     super(props);
 
     this.state = {
-
+      searchQuery: '',
     };
-    
-
-    this.clickedFilterCompleted = this.clickedFilterCompleted.bind(this);
   }
 
-  clickedFilterCompleted(event) {
+  clickedFilterCompleted = (event) => {
     this.props.toggleFilteringComplete();
+  }
+
+  updateSearch = (event) => {
+    // keep track of input in state
+    this.setState({searchQuery: event.target.value}, () => {
+      this.props.updateSearchQuery(this.state.searchQuery);
+    });
+    
   }
 
 
@@ -25,6 +30,7 @@ class TodoFilters extends Component {
       <div className="todoFiltersContainer">
         <div>Filter Completed</div>
         <input className="filterCompletedCheckbox" id="checkBox" type="checkbox" checked={this.props.filteringCompleted} onChange={this.clickedFilterCompleted}/>
+        <input className="searchTodosInput" type="text" name="searchQuery" onChange={this.updateSearch} value={this.state.searchQuery} placeholder="search todos..." />
       </div>
     )
   }

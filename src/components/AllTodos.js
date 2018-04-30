@@ -59,8 +59,20 @@ class AllTodos extends Component {
 
   filterTodos = (item) => {
     
-    // if todo is marked completed filter out of array
-    if(this.props.filteringCompleted === true) {
+    
+    if(this.props.filteringCompleted === true && this.props.searchQuery.length > 0) {
+      // if filtering out complete and searching 
+      if(item.completed === false) {
+        if(item.todoText.indexOf(this.props.searchQuery) >= 0) {
+          return item
+        }
+      }
+    } else if(this.props.searchQuery.length > 0){
+        // if searching filter out notes that don't match query
+        return item.todoText.indexOf(this.props.searchQuery) >= 0;
+    } else if(this.props.filteringCompleted === true) {
+
+      // if todo is marked completed filter out of array
       return item.completed === false;
     } else {
       // if no filter return all
@@ -69,21 +81,26 @@ class AllTodos extends Component {
   }
 
   render() {
+
     return (
       <div className="allTodosContainer">
         {this.props.allTodos.filter(this.filterTodos).map((todo, index) => {
+          let isEditable = todo.editable; 
           return (
             <div key={todo.key} className="todoItem">
               <div className="leftSideTodo">
                 <div className="circleBackground">
-                  <FontAwesomeIcon className={(todo.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} onClick={this.completedTodo} data-key={todo.key} />
+                  <div className="circleClickZone" onClick={this.completedTodo} data-key={todo.key}></div>
+                  <FontAwesomeIcon className={(todo.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} />
                 </div>
-                
                 <textarea disabled={todo.editable ? false : true} className={(todo.completed ? 'todoTextFaded' : 'todoText') + ' ' + (todo.editable ? 'editingTodo' : null)} defaultValue={todo.editable ? this.state.tempNote : todo.todoText} onChange={this.editedNote} ></textarea>
               </div>
               <div className="rightSideTodo">
-                <FontAwesomeIcon visibility={todo.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={todo.key} />
-                <FontAwesomeIcon visibility={todo.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-key={todo.key} data-text={todo.todoText} />
+                {isEditable ? 
+                  <FontAwesomeIcon visibility={todo.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={todo.key} /> 
+                  : 
+                  <FontAwesomeIcon visibility={todo.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-key={todo.key} data-text={todo.todoText} />
+                  }
                 <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-key={todo.key} />
               </div>
             </div>

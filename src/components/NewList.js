@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
-import './newTodo.css';
+import './NewList.css';
 
-class NewTodo extends Component {
+class NewList extends Component {
   
   constructor(props) {
     super(props);
@@ -11,14 +11,14 @@ class NewTodo extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
 
     this.state = {
-      newNoteValue: '',
+      newListName: '',
     };
   }
 
 
   handleChange(event) {
     // keep track of input in state
-    this.setState({newNoteValue: event.target.value});
+    this.setState({newListName: event.target.value});
   }
 
   handleSubmit(event) {
@@ -28,20 +28,20 @@ class NewTodo extends Component {
     // to send it up to the parent componenet
     // to be added to all todos
     
-    this.props.createNewNote(this.state.newNoteValue);
+    this.props.createNewList(this.state.newListName);
 
     // reset note value
-    this.setState({newNoteValue: ''});
+    this.setState({newListName: ''});
   }
 
   render() {
     return (
       <div className="newTodoContainer">
-        <input className="newTodoInput" type="text" name="newNoteText" onChange={this.handleChange} value={this.state.newNoteValue} placeholder="Add a new todo..." />
+        <input className="newTodoInput" type="text" name="newNoteText" onChange={this.handleChange} value={this.state.newListName} placeholder="Create a new list..." />
         <div className="newTodoSubmit" onClick={this.handleSubmit}>Submit</div>
       </div>
     )
   }
 };
 
-export default NewTodo;
+export default NewList;

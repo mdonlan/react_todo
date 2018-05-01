@@ -2,12 +2,17 @@ import React, { Component } from 'react';
 import shortid from 'shortid';
 import moment from 'moment';
 
-import NewTodo from './NewTodo';
-import AllTodos from './AllTodos';
+import NewList from './NewList';
+import Lists from './Lists';
 import TodoFilters from './TodoFilters';
 
+import './Home.css';
+
 import firebase from '../firebase.js';
-import './home.css';
+
+import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+
 
 class Home extends Component {
   
@@ -17,6 +22,7 @@ class Home extends Component {
       todos: [],
       filteringCompleted: false,
       searchQuery: '',
+      lists: [],
     };
   }
 
@@ -26,16 +32,43 @@ class Home extends Component {
     // setup firebase event watcher
     // fires anytime a change is detected in todosDB
     todosDB.on('value', (snapshot) => {
-      let todos = snapshot.val();
-      let allTodos = [];
-      if(todos) {
-        Object.keys(todos).forEach(function(obj) {
+      let lists = snapshot.val();
+      let allLists = [];
+      if(lists) {
+        Object.keys(lists).forEach(function(obj) {
           // push each todo from the db to array
-          allTodos.push(todos[obj])
+          allLists.push(lists[obj])
         });
-        this.setState({ todos: allTodos })
+        this.setState({ lists: allLists })
       }
     });
+  }
+
+  createNewList = (data) => {
+    let createdAt = moment().format("dddd, MMMM Do YYYY, h:mm:ss a");
+    let newList = {
+      editable: false,
+      listTitle: data,
+      key: shortid.generate(),
+      visible: true,
+      created: createdAt,
+      notes: ['empty'],
+    }
+
+    // this is a prop callback for adding new notes to the state
+    let tempLists = this.state.lists;
+    tempLists.push(newList);
+    this.setState({lists: tempLists});
+
+    // get reference to firebase db
+    const db = firebase.database().ref('todos');
+     
+    db.push(newList)
+      .then(res => {
+        let key = res.getKey();
+        firebase.database().ref().child('/todos/' + key)
+          .update({ dbListKey: key});
+      })
   }
 
   createNewNote = (data) => {
@@ -43,43 +76,62 @@ class Home extends Component {
     let newNote = {
       completed: false,
       editable: false,
-      todoText: data,
+      todoText: data.note,
       key: shortid.generate(),
       visible: true,
       created: createdAt,
+      dbListKey: data.thisListKey,
     }
-    // this is a prop callback for adding new notes to the state
-    let allTodos = this.state.todos;
-    allTodos.push(newNote);
-    this.setState({todos: allTodos});
 
-    // get reference to firebase db
-    const todosDB = firebase.database().ref('todos');
+    
+
+    let allLists = this.state.lists;
+    allLists.forEach(function(list) {
+      if(list.dbListKey === newNote.dbListKey) {
+        list.notes.push(newNote)
+        const db = firebase.database().ref('/todos/' + list.dbListKey);
+        db.set(list)
+      }
+    })
+
     
     // push new todo to firebase db
     // on callback from db get key and then 
     // push the todo to the server again w/ key 
-    todosDB.push(newNote)
-      .then(res => {
-        let key = res.getKey();
-        firebase.database().ref().child('/todos/' + key)
-          .update({ dbKey: key});
-      })
 
+    /*
+    // this is a prop callback for adding new notes to the state
+    let allTodos = this.state.todos;
+    allTodos.push(newNote);
+    this.setState({todos: allTodos});
+    */
+    // get reference to firebase db
     
+    
+      
   }
 
-  deleteNote = (key) => {
-    // callback for removing a note from the state
+  deleteNote = (data) => {
+    // remove a note from the db
+    // do this by finding the correct list and getting its notes
+    // then splicing out the selected note
+    // and update the db notes
 
-    // get specific item in todos array based off item key
-    let todo = this.state.todos.find(function (item, index) { 
-      item.index = index;
-      return item.key === key; 
+    // finds correct list based on dbListKey
+    let list = this.state.lists.find(function (item) { 
+      return item.dbListKey === data.listKey; 
     });
 
-    const todoRef = firebase.database().ref(`/todos/` + todo.dbKey);
-    todoRef.remove();
+    // find which note to remove
+    list.notes.forEach(function(item, index) {
+      if(item.key === data.noteKey) {
+        list.notes.splice(index, 1)
+      }
+    })
+
+    // update
+    const db = firebase.database().ref(`/todos/` + data.listKey);
+    db.update({ notes: list.notes});
   }
 
   completedNote = (key) => {
@@ -153,23 +205,31 @@ class Home extends Component {
   render() {
     return (
       <div className="homeContainer">
-        <NewTodo 
-          createNewNote={this.createNewNote} 
+        <NewList 
+          createNewList={this.createNewList} 
         />
         <TodoFilters 
           filteringCompleted={this.state.filteringCompleted}
           toggleFilteringComplete={this.toggleFilteringComplete}
           updateSearchQuery={this.updateSearchQuery}
         />
-        <AllTodos 
-          allTodos={this.state.todos}
+        <Lists 
+          allLists={this.state.lists}
           deleteNote={this.deleteNote}
           completedNote={this.completedNote}
           setEditMode={this.setEditMode}
           saveEdit={this.saveEdit}
           filteringCompleted={this.state.filteringCompleted}
           searchQuery={this.state.searchQuery}
+          createNewNote={this.createNewNote}
         />
+        <ResponsiveGridLayout className="layout" cols={12} rowHeight={30} width={500}
+        breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}}
+        cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
+        <div key="a" className="gridBox" data-grid={{x: 0, y: 0, w: 1, h: 2, static: true}}>a</div>
+        <div key="b" className="gridBox" data-grid={{x: 1, y: 0, w: 3, h: 2, minW: 2, maxW: 4}}>b</div>
+        <div key="c" className="gridBox" data-grid={{x: 4, y: 0, w: 1, h: 2}}>c</div>
+      </ResponsiveGridLayout>
       </div>
     )
   }

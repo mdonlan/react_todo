@@ -9,9 +9,10 @@ import faSave from '@fortawesome/fontawesome-free-solid/faSave';
 import faDrag from '@fortawesome/fontawesome-free-solid/faArrowsAlt';
 
 import NewNote from './NewNote';
+import Note from './Note';
 
 import './Lists.css';
-import Draggable from 'react-draggable';
+
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 
 
@@ -40,8 +41,8 @@ class Lists extends Component {
   }
 
   componentWillReceiveProps(nextProps, props) {
-    if(nextProps.allLists != props.allLists) {
-      console.log('updating list state from db')
+    if(nextProps.allLists !== props.allLists) {
+      //console.log('updating list state from db')
       this.setState({allLists: nextProps.allLists});
     }
 
@@ -53,8 +54,8 @@ class Lists extends Component {
 
   deleteTodo = (event) => {
     let data = {
-      noteKey: event.target.dataset.key,
-      listKey: event.target.dataset.dblistkey,
+      noteKey: event.target.dataset.notekey,
+      listKey: event.target.dataset.listkey,
     }
     this.props.deleteNote(data);
   }
@@ -64,9 +65,14 @@ class Lists extends Component {
   }
   
   setEditMode = (event) => {
-    // turn on edit mode
+    // toggle edit mode
     
-    this.props.setEditMode(event.target.dataset.key);
+    let data = {
+      noteKey: event.target.dataset.notekey,
+      listKey: event.target.dataset.listkey,
+    }
+    
+    this.props.setEditMode(data);
     this.setState({tempNote: event.target.dataset.text});
   }
 
@@ -130,7 +136,10 @@ class Lists extends Component {
   render() {
     
     const SortableItem = SortableElement(({value}) => {
-      let isEditable = value.editable;
+      if(!value.notes) {
+        // this prevents lists w/out any notes from causing error w/ filtering undefined
+        value.notes = [];
+      }
       return (
         <div className="list">
           <div className="top">
@@ -140,30 +149,35 @@ class Lists extends Component {
           <NewNote 
             allLists={this.state.allLists}
             createNewNote={this.createNewNote}
-            dbListKey={value.dbListKey}
+            listKey={value.listKey}
           />
-
-          {value.notes.filter(this.filterNotes).map((note, index) => {
         
-        return (
-          <div className="todoItem" key={note.key}>
-            <div className="leftSideTodo">
-              <div className="circleBackground">
-                <div className="circleClickZone" onClick={this.completedTodo} data-key={note.key}></div>
-                <FontAwesomeIcon className={(note.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} />
+          {value.notes.filter(this.filterNotes).map((note, index) => {
+            let isEditable = note.editable;
+        
+            return (
+              <div className="todoItem" key={note.key}>
+                <div className="leftSideTodo">
+                  <div className="circleBackground">
+                    <div className="circleClickZone" onClick={this.completedTodo} data-key={note.key}></div>
+                    <FontAwesomeIcon className={(note.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} />
+                  </div>
+                  <Note
+                    note={note}    
+                    tempNote={this.state.tempNote}              
+                  />
+                </div>
+                <div className="rightSideTodo">
+                
+                  {isEditable ? 
+                    <FontAwesomeIcon visibility={note.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={note.key} /> 
+                    : 
+                    <FontAwesomeIcon visibility={note.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-notekey={note.key} data-listkey={note.onListKey} data-text={note.todoText} />
+                    }
+                  <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-notekey={note.key} data-listkey={note.onListKey} />
+                </div>
               </div>
-              <textarea disabled={note.editable ? false : true} className={(note.completed ? 'todoTextFaded' : 'todoText') + ' ' + (note.editable ? 'editingTodo' : null)} defaultValue={note.editable ? this.state.tempNote : note.todoText} onChange={this.editedNote} ></textarea>
-            </div>
-            <div className="rightSideTodo">
-              {isEditable ? 
-                <FontAwesomeIcon visibility={note.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={note.key} /> 
-                : 
-                <FontAwesomeIcon visibility={note.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-key={note.key} data-text={note.todoText} />
-                }
-              <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-key={note.key} data-dblistkey={note.dbListKey} />
-            </div>
-          </div>
-        )
+            )
         
       })}
         </div>
@@ -183,7 +197,12 @@ class Lists extends Component {
     return (
       <div className="listsWrapper">
         {this.props.isLoadingLists ?
-        <SortableList items={this.state.allLists.filter(this.filterLists)} onSortEnd={this.onSortEnd} axis='xy' />
+        <SortableList 
+          items={this.state.allLists.filter(this.filterLists)} 
+          onSortEnd={this.onSortEnd} 
+          axis='xy' 
+          distance={10}
+        />
         :
         <div className="loadingContainer"></div>
       }

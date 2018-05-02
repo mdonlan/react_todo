@@ -10,7 +10,6 @@ import './Home.css';
 
 import firebase from '../firebase.js';
 
-import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
@@ -38,7 +37,7 @@ class Home extends Component {
       let lists = snapshot.val();
       let allLists = [];
       if(lists) {
-        console.log(lists)
+        //console.log(lists)
         Object.keys(lists).forEach(function(obj) {
           // push each todo from the db to array
           allLists.push(lists[obj])
@@ -53,10 +52,10 @@ class Home extends Component {
     let newList = {
       editable: false,
       listTitle: data,
-      key: shortid.generate(),
+      listKey: shortid.generate(),
       visible: true,
       created: createdAt,
-      notes: ['empty'],
+      notes: [],
     }
 
     // this is a prop callback for adding new notes to the state
@@ -67,12 +66,12 @@ class Home extends Component {
     // get reference to firebase db
     const db = firebase.database().ref('todos');
      
-    db.push(newList)
-      .then(res => {
-        let key = res.getKey();
-        firebase.database().ref().child('/todos/' + key)
-          .update({ dbListKey: key});
-      })
+    db.set(tempLists)
+      //.then(res => {
+      //  let key = res.getKey();
+      //  firebase.database().ref().child('/todos/' + key)
+      //    .update({ dbListKey: key});
+      //})
   }
 
   createNewNote = (data) => {
@@ -84,20 +83,23 @@ class Home extends Component {
       key: shortid.generate(),
       visible: true,
       created: createdAt,
-      dbListKey: data.thisListKey,
+      onListKey: data.thisListKey,
     }
-
+    
     let allLists = this.state.lists;
     allLists.forEach(function(list) {
-      if(list.dbListKey === newNote.dbListKey) {
+      //console.log(list)
+      //console.log(newNote)
+      if(list.listKey === newNote.onListKey) {
         list.notes.push(newNote)
-        const db = firebase.database().ref('/todos/' + list.dbListKey);
-        db.set(list)
+        const db = firebase.database().ref('/todos/');
+        db.set(allLists)
       }
     })
   }
 
   deleteNote = (data) => {
+    console.log('deteting note')
     // remove a note from the db
     // do this by finding the correct list and getting its notes
     // then splicing out the selected note
@@ -105,7 +107,7 @@ class Home extends Component {
 
     // finds correct list based on dbListKey
     let list = this.state.lists.find(function (item) { 
-      return item.dbListKey === data.listKey; 
+      return item.listKey === data.listKey;
     });
 
     // find which note to remove
@@ -115,9 +117,17 @@ class Home extends Component {
       }
     })
 
+    let allLists = this.state.lists;
+    
+    const db = firebase.database().ref('todos');
+    db.set(allLists)
+    /*
+
     // update
     const db = firebase.database().ref(`/todos/` + data.listKey);
     db.update({ notes: list.notes});
+
+    */
   }
 
   completedNote = (key) => {
@@ -142,12 +152,47 @@ class Home extends Component {
       .update({ completed: isCompleted});
   }
 
-  setEditMode = (key) => {
-    // callback for completing a todo
-    let todo = this.state.todos.find(function (item, index) { 
+  setEditMode = (data) => {
+    console.log(data)
+    // toggle each note to be editable or not
+
+    let list = this.state.lists.find(function(item, index) {
+      // loop through each list
+      // if the data.listKey is the same as the current 
+      // list key then weve found the correct list
+      item.index = index;
+      return item.listKey === data.listKey;
+    })
+
+    let note = list.notes.find(function(item, index) {
+      item.index = index;
+      return item.key === data.noteKey;
+    })
+
+
+    let allLists = this.state.lists;
+    let onNote = allLists[list.index].notes[note.index];
+    
+    // toggle note editable
+
+    if(onNote.editable === true) {
+      onNote.editable = false;
+    } else if(onNote.editable === false) {
+      if(onNote.completed === false)
+      onNote.editable = true;
+    }
+
+    this.setState({lists: allLists});
+
+    /*
+
+  
+    let list = this.state.lists.find(function (item, index) { 
+      console.log('testing')
       item.index = index;
       return item.key === key; 
-    });
+    }); 
+    
     // toggle complete status in the note by its index
     let allTodos = this.state.todos;
     if(allTodos[todo.index].editable === true) {
@@ -160,6 +205,7 @@ class Home extends Component {
     }
     
     this.setState({todos: allTodos});
+  */
   }
 
   saveEdit = (data) => {
@@ -192,6 +238,7 @@ class Home extends Component {
     // when a list changed locally send that upate to the server
     // data is new list order
     const db = firebase.database().ref('todos');
+    //console.log(data)
     db.set(data)
   }
 
@@ -218,15 +265,7 @@ class Home extends Component {
           updateListOrder={this.updateListOrder}
           isLoadingLists={this.state.isLoadingLists}
         />
-        {/*}
-        <ResponsiveGridLayout className="layout" cols={12} rowHeight={30} width={500}
-        breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}}
-        cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
-        <div key="a" className="gridBox" >a</div>
-        <div key="b" className="gridBox" data-grid={{x: 1, y: 0, w: 3, h: 2, minW: 2, maxW: 4}}>b</div>
-        <div key="c" className="gridBox" data-grid={{x: 4, y: 0, w: 1, h: 2}}>c</div>
-      </ResponsiveGridLayout>
-      {*/}
+
       </div>
     )
   }

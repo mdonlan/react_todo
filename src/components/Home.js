@@ -12,6 +12,7 @@ import firebase from '../firebase.js';
 
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 
 class Home extends Component {
@@ -23,6 +24,7 @@ class Home extends Component {
       filteringCompleted: false,
       searchQuery: '',
       lists: [],
+      isLoadingLists: false,
     };
   }
 
@@ -32,9 +34,11 @@ class Home extends Component {
     // setup firebase event watcher
     // fires anytime a change is detected in todosDB
     todosDB.on('value', (snapshot) => {
+      this.setState({isLoadingLists: true});
       let lists = snapshot.val();
       let allLists = [];
       if(lists) {
+        console.log(lists)
         Object.keys(lists).forEach(function(obj) {
           // push each todo from the db to array
           allLists.push(lists[obj])
@@ -83,8 +87,6 @@ class Home extends Component {
       dbListKey: data.thisListKey,
     }
 
-    
-
     let allLists = this.state.lists;
     allLists.forEach(function(list) {
       if(list.dbListKey === newNote.dbListKey) {
@@ -93,22 +95,6 @@ class Home extends Component {
         db.set(list)
       }
     })
-
-    
-    // push new todo to firebase db
-    // on callback from db get key and then 
-    // push the todo to the server again w/ key 
-
-    /*
-    // this is a prop callback for adding new notes to the state
-    let allTodos = this.state.todos;
-    allTodos.push(newNote);
-    this.setState({todos: allTodos});
-    */
-    // get reference to firebase db
-    
-    
-      
   }
 
   deleteNote = (data) => {
@@ -202,6 +188,13 @@ class Home extends Component {
     this.setState({searchQuery: data});
   }
 
+  updateListOrder = (data) => {
+    // when a list changed locally send that upate to the server
+    // data is new list order
+    const db = firebase.database().ref('todos');
+    db.set(data)
+  }
+
   render() {
     return (
       <div className="homeContainer">
@@ -222,14 +215,18 @@ class Home extends Component {
           filteringCompleted={this.state.filteringCompleted}
           searchQuery={this.state.searchQuery}
           createNewNote={this.createNewNote}
+          updateListOrder={this.updateListOrder}
+          isLoadingLists={this.state.isLoadingLists}
         />
+        {/*}
         <ResponsiveGridLayout className="layout" cols={12} rowHeight={30} width={500}
         breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0}}
         cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
-        <div key="a" className="gridBox" data-grid={{x: 0, y: 0, w: 1, h: 2, static: true}}>a</div>
+        <div key="a" className="gridBox" >a</div>
         <div key="b" className="gridBox" data-grid={{x: 1, y: 0, w: 3, h: 2, minW: 2, maxW: 4}}>b</div>
         <div key="c" className="gridBox" data-grid={{x: 4, y: 0, w: 1, h: 2}}>c</div>
       </ResponsiveGridLayout>
+      {*/}
       </div>
     )
   }

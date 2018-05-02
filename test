@@ -1,0 +1,70 @@
+
+
+
+<div className="listsContainer">
+{this.props.allLists.filter(this.filterLists).map((list, index) => {
+  let isEditable = list.editable; 
+  
+  return (
+
+    
+    
+    // in data-grid for x: use index * width to set starting position in grid
+    /*
+    <Draggable
+      grid={[25, 25]}
+      handle=".dragButton"
+      key={list.key}
+      onStart={this.handleStart}
+      onDrag={this.handleDrag}
+      onStop={this.handleStop}
+      position={this.state.position}
+    >
+    */
+    <div className="list" data-listname={list.listTitle}>
+      <div className="top">
+        <div className="title">{list.listTitle}</div>
+        <FontAwesomeIcon className="dragButton" icon={faDrag} />
+      </div>
+      <NewNote 
+        allLists={this.props.allLists}
+        createNewNote={this.createNewNote}
+        dbListKey={list.dbListKey}
+      />
+      
+      {list.notes.filter(this.filterNotes).map((note, index) => {
+        
+        return (
+          <div className="todoItem" key={note.key}>
+            <div className="leftSideTodo">
+              <div className="circleBackground">
+                <div className="circleClickZone" onClick={this.completedTodo} data-key={note.key}></div>
+                <FontAwesomeIcon className={(note.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} />
+              </div>
+              <textarea disabled={note.editable ? false : true} className={(note.completed ? 'todoTextFaded' : 'todoText') + ' ' + (note.editable ? 'editingTodo' : null)} defaultValue={note.editable ? this.state.tempNote : note.todoText} onChange={this.editedNote} ></textarea>
+            </div>
+            <div className="rightSideTodo">
+              {isEditable ? 
+                <FontAwesomeIcon visibility={note.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={note.key} /> 
+                : 
+                <FontAwesomeIcon visibility={note.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-key={note.key} data-text={note.todoText} />
+                }
+              <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-key={note.key} data-dblistkey={note.dbListKey} />
+            </div>
+          </div>
+        )
+        
+      })}
+      
+    </div>
+    /*
+    </Draggable>
+    */
+  )
+ 
+})}
+{/*}
+ </ResponsiveGridLayout>
+ {*/}
+ 
+</div>

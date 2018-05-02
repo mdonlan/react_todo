@@ -6,10 +6,14 @@ import faTrash from '@fortawesome/fontawesome-free-solid/faTrashAlt';
 import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
 import faPencil from '@fortawesome/fontawesome-free-solid/faPencilAlt';
 import faSave from '@fortawesome/fontawesome-free-solid/faSave';
+import faDrag from '@fortawesome/fontawesome-free-solid/faArrowsAlt';
 
 import NewNote from './NewNote';
 
 import './Lists.css';
+import Draggable from 'react-draggable';
+import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
+
 
 class Lists extends Component {
   
@@ -18,10 +22,29 @@ class Lists extends Component {
     this.state = {
       tempNote: '',
       filter: true,
+      testArray: [
+        'test1',
+        'test2',
+        'test3',
+      ],
+      activeElement: '',
+      overElement: '',
+      position: null,
+      isOverlapping: false,
+      activeBounds: '',
+      overBounds: '',
+      list: ['Box 1', 'Box 2', 'Box 3', 'Box 4'],
+      allLists: this.props.allLists,
+      isLoadingLists: this.props.isLoadingLists,
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps, props) {
+    if(nextProps.allLists != props.allLists) {
+      console.log('updating list state from db')
+      this.setState({allLists: nextProps.allLists});
+    }
+
     // on props update if
     nextProps.allLists.forEach(function(value, i) {
       //console.log(value);
@@ -95,45 +118,77 @@ class Lists extends Component {
     }
   }
 
+  onSortEnd = ({oldIndex, newIndex}) => {
+    // when a list has been moved and dropped in a new location upate its position in the state and db arrays
+    let newLists = arrayMove(this.state.allLists, oldIndex, newIndex);
+    this.setState({
+      allLists: newLists
+    });
+    this.props.updateListOrder(newLists);
+  }
+
   render() {
+    
+    const SortableItem = SortableElement(({value}) => {
+      let isEditable = value.editable;
+      return (
+        <div className="list">
+          <div className="top">
+            <div className="title">{value.listTitle}</div>
+            <FontAwesomeIcon className="dragButton" icon={faDrag} />
+          </div>
+          <NewNote 
+            allLists={this.state.allLists}
+            createNewNote={this.createNewNote}
+            dbListKey={value.dbListKey}
+          />
+
+          {value.notes.filter(this.filterNotes).map((note, index) => {
+        
+        return (
+          <div className="todoItem" key={note.key}>
+            <div className="leftSideTodo">
+              <div className="circleBackground">
+                <div className="circleClickZone" onClick={this.completedTodo} data-key={note.key}></div>
+                <FontAwesomeIcon className={(note.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} />
+              </div>
+              <textarea disabled={note.editable ? false : true} className={(note.completed ? 'todoTextFaded' : 'todoText') + ' ' + (note.editable ? 'editingTodo' : null)} defaultValue={note.editable ? this.state.tempNote : note.todoText} onChange={this.editedNote} ></textarea>
+            </div>
+            <div className="rightSideTodo">
+              {isEditable ? 
+                <FontAwesomeIcon visibility={note.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={note.key} /> 
+                : 
+                <FontAwesomeIcon visibility={note.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-key={note.key} data-text={note.todoText} />
+                }
+              <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-key={note.key} data-dblistkey={note.dbListKey} />
+            </div>
+          </div>
+        )
+        
+      })}
+        </div>
+      ); 
+    })
+                                     
+    const SortableList = SortableContainer(({items}) => {
+        return (
+          <div className="listsContainer">
+            {items.map((item, index) => {
+              return <SortableItem key={`item-${index}`} index={index} value={item} />;
+            })}
+          </div>
+        );
+    });
 
     return (
-      <div className="listsContainer">
-        {this.props.allLists.filter(this.filterLists).map((list, index) => {
-          let isEditable = list.editable; 
-          return (
-            <div className="list" key={list.key}>
-              <div className="title">{list.listTitle}</div>
-              <NewNote 
-                allLists={this.props.allLists}
-                createNewNote={this.createNewNote}
-                dbListKey={list.dbListKey}
-              />
-              {list.notes.filter(this.filterNotes).map((note, index) => {
-                return (
-                  <div className="todoItem" key={note.key}>
-                    <div className="leftSideTodo">
-                      <div className="circleBackground">
-                        <div className="circleClickZone" onClick={this.completedTodo} data-key={note.key}></div>
-                        <FontAwesomeIcon className={(note.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} />
-                      </div>
-                      <textarea disabled={note.editable ? false : true} className={(note.completed ? 'todoTextFaded' : 'todoText') + ' ' + (note.editable ? 'editingTodo' : null)} defaultValue={note.editable ? this.state.tempNote : note.todoText} onChange={this.editedNote} ></textarea>
-                    </div>
-                    <div className="rightSideTodo">
-                      {isEditable ? 
-                        <FontAwesomeIcon visibility={note.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={note.key} /> 
-                        : 
-                        <FontAwesomeIcon visibility={note.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-key={note.key} data-text={note.todoText} />
-                        }
-                      <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-key={note.key} data-dblistkey={note.dbListKey} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )
-        })}
+      <div className="listsWrapper">
+        {this.props.isLoadingLists ?
+        <SortableList items={this.state.allLists.filter(this.filterLists)} onSortEnd={this.onSortEnd} axis='xy' />
+        :
+        <div className="loadingContainer"></div>
+      }
       </div>
+      
     )
   }
 }

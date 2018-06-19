@@ -53,11 +53,11 @@ class ListView extends Component {
             )
           })}
         </div>
-        {this.state.activeNote && 
+        {this.state.activeNote && this.props.allLists.length > 0 && 
           <div className="activeNoteContainer">
           <div className="activeNote">
             <div className="activeNoteTitle">{this.state.activeNote.listTitle}</div>
-              {this.state.activeNote.notes.map((item) => {
+              {this.state.activeNote.notes && this.state.activeNote.notes.map((item) => {
                 return (
                   <div className="activeNoteItem" key={item.key}>
                     <div className="circleBackground">

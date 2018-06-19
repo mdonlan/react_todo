@@ -13,7 +13,25 @@
 }
 
 .signInInput {
-  padding: 3px;
   margin-top: 5px;
   margin-bottom: 5px;
+  width: 190px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.signInButton {
+  background: #222222;
+  width: 200px;
+  margin-top: 5px;
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.signInButton:hover {
+  background: #147c2e;
+  border-radius: 5px;
 }

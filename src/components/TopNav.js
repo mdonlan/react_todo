@@ -35,12 +35,14 @@ class TopNav extends Component {
 
   handleSignupClick = () => {
     this.setState({displaySignup: true});
+    this.setState({displaySignIn: false});
   };
 
   handleSignOutClick = () => {
     firebase.auth().signOut().then(() => {
       // Sign-out successful.
       this.setState({userSignedIn: false});
+      this.props.userSignedOut();
     }).catch(function(error) {
       // An error happened.
     });
@@ -48,6 +50,7 @@ class TopNav extends Component {
 
   handleSignInClick = () => {
     this.setState({displaySignIn: true});
+    this.setState({displaySignup: false});
   };
 
   hideSignup = () => {
@@ -63,9 +66,9 @@ class TopNav extends Component {
   render() {
     return (
       <div className="topNavContainer">
-        {!this.state.userSignedIn && <div onClick={this.handleSignupClick}>Sign up</div>}
-        {this.state.userSignedIn && <div onClick={this.handleSignOutClick}>Sign out</div>}
-        {!this.state.userSignedIn && <div onClick={this.handleSignInClick}>Sign In</div>}
+        {!this.state.userSignedIn && <div className="topNavSignUp topNavButton" onClick={this.handleSignupClick}>Sign up</div>}
+        {this.state.userSignedIn && <div className="topNavSignOu topNavButton" onClick={this.handleSignOutClick}>Sign out</div>}
+        {!this.state.userSignedIn && <div className="topNavSignIn topNavButton" onClick={this.handleSignInClick}>Sign In</div>}
         {this.state.displaySignup && 
           <Signup
             hide={this.hideSignup}

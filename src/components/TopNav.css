@@ -1,5 +1,26 @@
 .topNavContainer {
   height: 75px;
   width: 100%;
-  background: darkred;
+  background: rgb(34, 33, 33);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.topNavButton {
+  height: 35px;
+  width: 75px;
+  border: 2px solid #dddddd;
+  margin-left: 10px;
+  margin-right: 10px;
+  line-height: 35px;
+  text-align: center; 
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.topNavButton:hover {
+  background: #dddddd;
+  color: #111111;
+  border-radius: 5px;
 }

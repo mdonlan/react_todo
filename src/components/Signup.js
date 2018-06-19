@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import './Signup.css';
 import firebase from '../firebase.js';
+import Loading from './Loading';
 
 class Signup extends Component {
   
@@ -9,28 +10,50 @@ class Signup extends Component {
     super(props);
 
     this.state = {
-
+      errorMessage: null,
+      loading: false,
     };
   }
 
   handleCreateAccountClick = () => {
-    let email = document.querySelector(".emailInput").value;
-    let password = document.querySelector(".passwordInput").value;
+    let emailElem = document.querySelector(".emailInput");
+    let passwordElem = document.querySelector(".passwordInput");
+    let email = emailElem.value;
+    let password = passwordElem.value;
+
+    this.setState({loading: true});
     firebase.auth().createUserWithEmailAndPassword(email, password).then(() => {
       //console.log('sign up successful')
       this.props.hide();
-    }).catch(function(error) {
+      this.setState({loading: false});
+    }).catch((error) => {
+      this.setState({loading: false});
       console.log(error)
+      this.setState({errorMessage: error.message})
+      passwordElem.value = '';
     });
   }
 
+  onChange = (event) => {
+    if(event.key === 'Enter') {
+      let signupButton = document.querySelector(".signupButton");
+      signupButton.click();
+    }
+  }
 
   render() {
     return (
-      <div className="signupContainer">
-        <input className="signupInput emailInput" placeholder="email" />
-        <input className="signupInput passwordInput" placeholder="password" type="password" />
-        <div onClick={this.handleCreateAccountClick}>Create Account</div>
+      <div>
+        {!this.state.loading &&
+          <div className="signupContainer">
+            Create New Account
+            <input className="signupInput emailInput" placeholder="email" onKeyPress={this.onChange}/>
+            <input className="signupInput passwordInput" placeholder="password" type="password" onKeyPress={this.onChange}/>
+            <div className="signupButton" onClick={this.handleCreateAccountClick}>Create Account</div>
+            <div className="errorSignIn">{this.state.errorMessage}</div>
+          </div>
+        }
+        {this.state.loading && <Loading />}
       </div>
     )
   }

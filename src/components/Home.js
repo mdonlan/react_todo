@@ -7,6 +7,7 @@ import CardView from './CardView';
 import ListView from './ListView';
 import TodoFilters from './TodoFilters';
 import LeftPanel from './LeftPanel';
+import TopNav from './TopNav';
 
 import './Home.css';
 
@@ -40,17 +41,21 @@ class Home extends Component {
           userId: user.uid,
         }, () => {
           console.log(this.state.userId)
+          this.getListsFromDB();
         });
       } else {
         // No user is signed in.
         console.log('user is NOT signed in');
       }
     });
+  }
 
-
+  getListsFromDB() {
+    // run this after making sure user is signed in
     // get reference to firebase db
-    const todosDB = firebase.database().ref('todos');
-    console.log(firebase)
+    console.log(this.state.userId)
+    const todosDB = firebase.database().ref('todos/' + this.state.userId);
+    console.log(todosDB)
     // setup firebase event watcher
     // fires anytime a change is detected in todosDB
     todosDB.on('value', (snapshot) => {
@@ -85,7 +90,7 @@ class Home extends Component {
     this.setState({lists: tempLists});
 
     // get reference to firebase db
-    const db = firebase.database().ref('todos');
+    const db = firebase.database().ref('todos/' + this.state.userId);
      
     db.set(tempLists)
       //.then(res => {
@@ -108,12 +113,12 @@ class Home extends Component {
     }
     
     let allLists = this.state.lists;
-    allLists.forEach(function(list) {
+    allLists.forEach((list) => {
       //console.log(list)
       //console.log(newNote)
       if(list.listKey === newNote.onListKey) {
         list.notes.push(newNote)
-        const db = firebase.database().ref('/todos/');
+        const db = firebase.database().ref('/todos/' + this.state.userId);
         db.set(allLists)
       }
     })
@@ -140,7 +145,7 @@ class Home extends Component {
 
     let allLists = this.state.lists;
     
-    const db = firebase.database().ref('todos');
+    const db = firebase.database().ref('todos/' + this.state.userId);
     db.set(allLists)
     /*
 
@@ -258,7 +263,7 @@ class Home extends Component {
   updateListOrder = (data) => {
     // when a list changed locally send that upate to the server
     // data is new list order
-    const db = firebase.database().ref('todos');
+    const db = firebase.database().ref('todos/' + this.state.userId);
     //console.log(data)
     db.set(data)
   }
@@ -271,10 +276,26 @@ class Home extends Component {
       this.setState({cardView: true});   
     }
   }
+  
+  userSignedOut = () => {
+    // the user has just signed out so we need to clear all their data
+    this.setState({
+      todos: [],
+      filteringCompleted: false,
+      searchQuery: '',
+      lists: [],
+      isLoadingLists: false,
+      cardView: false,
+      userSignedIn: false,
+      userId: null,
+    });
+
+  }
 
   render() {
       return (
         <div className="homeContainer">
+          <TopNav userSignedOut={this.userSignedOut}/>
           <NewList 
             createNewList={this.createNewList} 
           />

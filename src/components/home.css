@@ -6,10 +6,12 @@
   flex-direction: column;
 }
 
-.layout {
-  background: #444444;
-  height: 500px;
-  width: 90%;
+.mainContainer {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  width: 80%;
+  height: 80%;
 }
 
 .gridBox {

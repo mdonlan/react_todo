@@ -3,16 +3,14 @@ import shortid from 'shortid';
 import moment from 'moment';
 
 import NewList from './NewList';
-import Lists from './Lists';
+import CardView from './CardView';
+import ListView from './ListView';
 import TodoFilters from './TodoFilters';
+import LeftPanel from './LeftPanel';
 
 import './Home.css';
 
 import firebase from '../firebase.js';
-
-import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
-
 
 class Home extends Component {
   
@@ -24,12 +22,35 @@ class Home extends Component {
       searchQuery: '',
       lists: [],
       isLoadingLists: false,
+      cardView: false,
+      userSignedIn: false,
+      userId: null,
     };
   }
 
   componentDidMount() {
+
+    // setup firebase auth watcher
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in.
+        console.log('user is signed in');
+        this.setState({
+          userSignedIn: true,
+          userId: user.uid,
+        }, () => {
+          console.log(this.state.userId)
+        });
+      } else {
+        // No user is signed in.
+        console.log('user is NOT signed in');
+      }
+    });
+
+
     // get reference to firebase db
     const todosDB = firebase.database().ref('todos');
+    console.log(firebase)
     // setup firebase event watcher
     // fires anytime a change is detected in todosDB
     todosDB.on('value', (snapshot) => {
@@ -242,32 +263,69 @@ class Home extends Component {
     db.set(data)
   }
 
-  render() {
-    return (
-      <div className="homeContainer">
-        <NewList 
-          createNewList={this.createNewList} 
-        />
-        <TodoFilters 
-          filteringCompleted={this.state.filteringCompleted}
-          toggleFilteringComplete={this.toggleFilteringComplete}
-          updateSearchQuery={this.updateSearchQuery}
-        />
-        <Lists 
-          allLists={this.state.lists}
-          deleteNote={this.deleteNote}
-          completedNote={this.completedNote}
-          setEditMode={this.setEditMode}
-          saveEdit={this.saveEdit}
-          filteringCompleted={this.state.filteringCompleted}
-          searchQuery={this.state.searchQuery}
-          createNewNote={this.createNewNote}
-          updateListOrder={this.updateListOrder}
-          isLoadingLists={this.state.isLoadingLists}
-        />
+  changeViewLayout = (data) => {
+    // check which view button was pressed and set the view to that
+    if(data === 'List') {
+      this.setState({cardView: false});   
+    } else {
+      this.setState({cardView: true});   
+    }
+  }
 
-      </div>
-    )
+  render() {
+      return (
+        <div className="homeContainer">
+          <NewList 
+            createNewList={this.createNewList} 
+          />
+          <TodoFilters 
+            filteringCompleted={this.state.filteringCompleted}
+            toggleFilteringComplete={this.toggleFilteringComplete}
+            updateSearchQuery={this.updateSearchQuery}
+            changeViewLayout={this.changeViewLayout}
+          />
+          <div className="mainContainer">
+            {/*}
+            <LeftPanel 
+              allLists={this.state.lists}
+            />
+            {*/}
+
+            {/* 
+              
+              this.state.cardView && 
+              checks if this.state.cardView is true and if so renders <CardView></CardView>
+            
+            */}
+            {this.state.cardView && <CardView 
+              allLists={this.state.lists}
+              deleteNote={this.deleteNote}
+              completedNote={this.completedNote}
+              setEditMode={this.setEditMode}
+              saveEdit={this.saveEdit}
+              filteringCompleted={this.state.filteringCompleted}
+              searchQuery={this.state.searchQuery}
+              createNewNote={this.createNewNote}
+              updateListOrder={this.updateListOrder}
+              isLoadingLists={this.state.isLoadingLists}
+              cardView={this.state.cardView}
+            />}
+            {!this.state.cardView && <ListView 
+              allLists={this.state.lists}
+              deleteNote={this.deleteNote}
+              completedNote={this.completedNote}
+              setEditMode={this.setEditMode}
+              saveEdit={this.saveEdit}
+              filteringCompleted={this.state.filteringCompleted}
+              searchQuery={this.state.searchQuery}
+              createNewNote={this.createNewNote}
+              updateListOrder={this.updateListOrder}
+              isLoadingLists={this.state.isLoadingLists}
+              cardView={this.state.cardView}
+            />}
+          </div>
+        </div>
+      )
   }
 };
 

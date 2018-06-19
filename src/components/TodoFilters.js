@@ -24,6 +24,10 @@ class TodoFilters extends Component {
     
   }
 
+  changeViewLayout = (event) => {
+    this.props.changeViewLayout(event.target.innerHTML);
+  }
+
 
   render() {
     return (
@@ -31,6 +35,9 @@ class TodoFilters extends Component {
         <div>Filter Completed</div>
         <input className="filterCompletedCheckbox" id="checkBox" type="checkbox" checked={this.props.filteringCompleted} onChange={this.clickedFilterCompleted}/>
         <input className="searchTodosInput" type="text" name="searchQuery" onChange={this.updateSearch} value={this.state.searchQuery} placeholder="search todos..." />
+        <div>View</div>
+        <div onClick={this.changeViewLayout}>Card</div>
+        <div onClick={this.changeViewLayout}>List</div>
       </div>
     )
   }

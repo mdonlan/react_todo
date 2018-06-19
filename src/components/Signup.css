@@ -1,0 +1,19 @@
+.signupContainer {
+  height: 650px;
+  width: 500px;
+  background: darkblue;
+  position: absolute;
+  top: calc(50% - 325px);
+  left: calc(50% - 250px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.signupInput {
+  padding: 3px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

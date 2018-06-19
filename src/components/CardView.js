@@ -11,12 +11,12 @@ import faDrag from '@fortawesome/fontawesome-free-solid/faArrowsAlt';
 import NewNote from './NewNote';
 import Note from './Note';
 
-import './Lists.css';
+import './CardView.css';
 
 import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 
 
-class Lists extends Component {
+class CardView extends Component {
   
   constructor(props) {
     super(props);
@@ -37,7 +37,12 @@ class Lists extends Component {
       list: ['Box 1', 'Box 2', 'Box 3', 'Box 4'],
       allLists: this.props.allLists,
       isLoadingLists: this.props.isLoadingLists,
+      viewType: false,
     };
+  }
+
+  componentDidMount() {
+    console.log(this.props)
   }
 
   componentWillReceiveProps(nextProps, props) {
@@ -141,9 +146,9 @@ class Lists extends Component {
         value.notes = [];
       }
       return (
-        <div className="list">
+        <div className="listCV">
           <div className="top">
-            <div className="title">{value.listTitle}</div>
+            <div className="title listTitle">{value.listTitle}</div>
             <FontAwesomeIcon className="dragButton" icon={faDrag} />
           </div>
           <NewNote 
@@ -186,7 +191,7 @@ class Lists extends Component {
                                      
     const SortableList = SortableContainer(({items}) => {
         return (
-          <div className="listsContainer">
+          <div className="listsContainerCV">
             {items.map((item, index) => {
               return <SortableItem key={`item-${index}`} index={index} value={item} />;
             })}
@@ -195,7 +200,7 @@ class Lists extends Component {
     });
 
     return (
-      <div className="listsWrapper">
+      <div className="listsWrapperCardView">
         {this.props.isLoadingLists ?
         <SortableList 
           items={this.state.allLists.filter(this.filterLists)} 
@@ -207,9 +212,8 @@ class Lists extends Component {
         <div className="loadingContainer"></div>
       }
       </div>
-      
     )
   }
 }
 
-export default Lists;
+export default CardView;

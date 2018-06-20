@@ -1,0 +1,10 @@
+.todoItem {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: flex;
+  height: 30px;
+  width: 300px;
+  border-bottom: 1px solid #dddddd;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}

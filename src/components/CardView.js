@@ -58,28 +58,16 @@ class CardView extends Component {
     });
   }
 
-  deleteTodo = (event) => {
-    let data = {
-      noteKey: event.target.dataset.notekey,
-      listKey: event.target.dataset.listkey,
-    }
+  deleteTodo = (data) => {
     this.props.deleteNote(data);
   }
 
-  completedTodo = (event) => {
-    this.props.completedNote(event.target.dataset.key);
+  completedTodo = (data) => {
+    this.props.completedNote(data);
   }
   
-  setEditMode = (event) => {
-    // toggle edit mode
-    
-    let data = {
-      noteKey: event.target.dataset.notekey,
-      listKey: event.target.dataset.listkey,
-    }
-    
+  setEditMode = (data) => {
     this.props.setEditMode(data);
-    this.setState({tempNote: event.target.dataset.text});
   }
 
   saveEdit = (event) => {
@@ -120,25 +108,9 @@ class CardView extends Component {
   }
 
   filterLists = (item) => {
-    
-    if(this.props.filteringCompleted === true && this.props.searchQuery.length > 0) {
-      // if filtering out complete and searching 
-      if(item.completed === false) {
-        if(item.todoText.indexOf(this.props.searchQuery) >= 0) {
-          return item
-        }
-      }
-    } else if(this.props.searchQuery.length > 0){
-        // if searching filter out notes that don't match query
-        return item.todoText.indexOf(this.props.searchQuery) >= 0;
-    } else if(this.props.filteringCompleted === true) {
-
-      // if todo is marked completed filter out of array
-      return item.completed === false;
-    } else {
-      // if no filter return all
-      return item
-    }
+    // only use to filter entire lists
+    // ex - searching list names
+    return item
   }
 
   handleSave = (data) => {
@@ -147,7 +119,13 @@ class CardView extends Component {
   }
 
   filterNotes = (note) => {
-    if(note !== 'empty') {
+    // user to filter individual notes on a list
+    // ex - to check if a note matches the seach query
+
+    if(this.props.searchQuery.length > 0) {
+      // if query is longer than zero check to see if each note matches
+        return note.todoText.indexOf(this.props.searchQuery) >= 0
+    } else {
       return note
     }
   }
@@ -184,28 +162,29 @@ class CardView extends Component {
             let isEditable = note.editable;
         
             return (
-              <div className="todoItem" key={note.key}>
-                <div className="leftSideTodo">
-                  <div className="circleBackground">
-                    <div className="circleClickZone" onClick={this.completedTodo} data-key={note.key}></div>
-                    <FontAwesomeIcon className={(note.completed ? 'completeButtonComplete' : 'completeButtonDefault') + " button"} icon={faCheck} />
-                  </div>
+              <div key={note.key}>
+                {this.props.filteringCompleted && note.completed === false && 
                   <Note
                     note={note}    
                     tempNote={this.state.tempNote} 
                     editedNote={this.editedNote}    
-                    handleSave={this.handleSave}         
+                    handleSave={this.handleSave}        
+                    setEditMode={this.setEditMode} 
+                    deleteTodo={this.deleteTodo}
+                    completedNote={this.completedTodo}
                   />
-                </div>
-                <div className="rightSideTodo">
-                
-                  {isEditable ? 
-                    <FontAwesomeIcon visibility={note.editable ? 'visible' : 'hidden'} className="saveEditButton button" icon={faSave} onClick={this.saveEdit} data-key={note.key} /> 
-                    : 
-                    <FontAwesomeIcon visibility={note.editable ? 'hidden' : 'visible'} className="editButton button" icon={faPencil} onClick={this.setEditMode} data-notekey={note.key} data-listkey={note.onListKey} data-text={note.todoText} />
-                    }
-                  <FontAwesomeIcon className="deleteButton button" icon={faTrash} onClick={this.deleteTodo} data-notekey={note.key} data-listkey={note.onListKey} />
-                </div>
+                }
+                {!this.props.filteringCompleted && 
+                  <Note
+                    note={note}    
+                    tempNote={this.state.tempNote} 
+                    editedNote={this.editedNote}    
+                    handleSave={this.handleSave}        
+                    setEditMode={this.setEditMode} 
+                    deleteTodo={this.deleteTodo}
+                    completedNote={this.completedTodo}
+                  />
+                }
               </div>
             )
           })}

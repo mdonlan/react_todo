@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import './TopNav.css';
 import Signup from './Signup';
 import SignIn from './SignIn';
+import TodoFilters from './TodoFilters';
+import NewList from './NewList';
 
 import firebase from '../firebase.js';
 
@@ -63,22 +65,49 @@ class TopNav extends Component {
     this.setState({displaySignIn: false});
   }
 
+  createNewList = (value) => {
+     this.props.createNewList(value);
+  }
+
+  updateSearchQuery = (value) => {
+    this.props.updateSearchQuery(value);
+  }
+
+  toggleFilteringComplete = () => {
+    this.props.toggleFilteringComplete();
+  }
+
+  
+
   render() {
     return (
       <div className="topNavContainer">
-        {!this.state.userSignedIn && <div className="topNavSignUp topNavButton" onClick={this.handleSignupClick}>Sign up</div>}
-        {this.state.userSignedIn && <div className="topNavSignOu topNavButton" onClick={this.handleSignOutClick}>Sign out</div>}
-        {!this.state.userSignedIn && <div className="topNavSignIn topNavButton" onClick={this.handleSignInClick}>Sign In</div>}
-        {this.state.displaySignup && 
-          <Signup
-            hide={this.hideSignup}
+        <div className="left">
+          <NewList 
+            createNewList={this.createNewList} 
           />
-        }
-        {this.state.displaySignIn && 
-          <SignIn 
-            hide={this.hideSignIn}
+          <TodoFilters 
+            filteringCompleted={this.state.filteringCompleted}
+            toggleFilteringComplete={this.toggleFilteringComplete}
+            updateSearchQuery={this.updateSearchQuery}
+            changeViewLayout={this.changeViewLayout}
           />
-        }
+        </div>
+        <div className="right">
+          {!this.state.userSignedIn && <div className="topNavSignUp topNavButton" onClick={this.handleSignupClick}>Sign up</div>}
+          {this.state.userSignedIn && <div className="topNavSignOu topNavButton" onClick={this.handleSignOutClick}>Sign out</div>}
+          {!this.state.userSignedIn && <div className="topNavSignIn topNavButton" onClick={this.handleSignInClick}>Sign In</div>}
+          {this.state.displaySignup && 
+            <Signup
+              hide={this.hideSignup}
+            />
+          }
+          {this.state.displaySignIn && 
+            <SignIn 
+              hide={this.hideSignIn}
+            />
+          }
+        </div>
       </div>
     )
   }

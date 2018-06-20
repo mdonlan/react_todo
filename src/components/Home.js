@@ -165,6 +165,7 @@ class Home extends Component {
   }
 
   completedNote = (key) => {
+    console.log(key)
     // callback for completing a todo
 
     // find which todo was selected
@@ -173,6 +174,7 @@ class Home extends Component {
     let listIndex;
     let noteIndex;
     this.state.lists.forEach((list, index) => {
+      console.log(list)
       list.notes.forEach((note, note_index) => {
         if(note.key === key) {
           selectedNote = note;
@@ -283,8 +285,18 @@ class Home extends Component {
     allLists[listIndex].notes[noteIndex].editable = false;
     this.setState({lists: allLists});
 
-    firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
-      .update({ todoText: data.value, editable: false});
+    // check if being passed null data
+    // this can happen if the user clicked edit and 
+    //then clicked save without changing anything
+    if(data.value) {
+      firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
+        .update({ todoText: data.value, editable: false});
+    } else {
+      firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
+        .update({editable: false});
+    }
+
+    
 
     /*
     // update state w/ new note text and turn off editing
@@ -353,11 +365,9 @@ class Home extends Component {
           {!this.state.userSignedIn && 
             <div className="notSignedInAlert">You are not signed in. Any notes created now will not be saved to the database.</div>
           }
-          <TopNav userSignedOut={this.userSignedOut}/>
-          <NewList 
+          <TopNav 
+            userSignedOut={this.userSignedOut}
             createNewList={this.createNewList} 
-          />
-          <TodoFilters 
             filteringCompleted={this.state.filteringCompleted}
             toggleFilteringComplete={this.toggleFilteringComplete}
             updateSearchQuery={this.updateSearchQuery}

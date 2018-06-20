@@ -2,14 +2,8 @@ import React, { Component } from 'react';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 
 // icons
-import faTrash from '@fortawesome/fontawesome-free-solid/faTrashAlt';
-import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
-import faPencil from '@fortawesome/fontawesome-free-solid/faPencilAlt';
-import faSave from '@fortawesome/fontawesome-free-solid/faSave';
-import faDrag from '@fortawesome/fontawesome-free-solid/faArrowsAlt';
 
-import NewNote from './NewNote';
-import Note from './Note';
+import faCheck from '@fortawesome/fontawesome-free-solid/faCheck';
 
 import './ListView.css';
 
@@ -24,10 +18,8 @@ class ListView extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(this.state.activeNote === null || this.state.activeNote == undefined) {
-      if(nextProps.allLists.length > 0) {
-        this.setState({activeNote: nextProps.allLists[0]})
-      }
+    if(nextProps.allLists.length > 0) {
+      this.setState({activeNote: nextProps.allLists[0]})
     }
   }
 
@@ -38,7 +30,7 @@ class ListView extends Component {
   setActiveList = (event) => {
     //console.log(event.target.dataset.listkey)
     //console.log(this.state.activeNote)
-    let newActiveNote = this.props.allLists.find(list => list.listKey == event.target.dataset.listkey)
+    let newActiveNote = this.props.allLists.find(list => list.listKey === event.target.dataset.listkey)
     this.setState({activeNote: newActiveNote});
   }
 

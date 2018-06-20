@@ -23,11 +23,11 @@ class TopNav extends Component {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         // User is signed in.
-        console.log('user is signed in');
+        //console.log('user is signed in');
         this.setState({userSignedIn: true});
       } else {
         // No user is signed in.
-        console.log('user is NOT signed in');
+        //console.log('user is NOT signed in');
         this.setState({userSignedIn: false});
       }
     });

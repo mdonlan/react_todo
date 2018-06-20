@@ -17,3 +17,9 @@
 .gridBox {
   border: 1px solid #dddddd;
 }
+
+.notSignedInAlert {
+  background: rgb(182, 34, 34);
+  width: 100%;
+  text-align: center;
+}

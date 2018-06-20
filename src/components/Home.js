@@ -6,7 +6,6 @@ import NewList from './NewList';
 import CardView from './CardView';
 import ListView from './ListView';
 import TodoFilters from './TodoFilters';
-import LeftPanel from './LeftPanel';
 import TopNav from './TopNav';
 
 import './Home.css';
@@ -23,7 +22,7 @@ class Home extends Component {
       searchQuery: '',
       lists: [],
       isLoadingLists: false,
-      cardView: false,
+      cardView: true,
       userSignedIn: false,
       userId: null,
     };
@@ -35,17 +34,17 @@ class Home extends Component {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         // User is signed in.
-        console.log('user is signed in');
+        //console.log('user is signed in');
         this.setState({
           userSignedIn: true,
           userId: user.uid,
         }, () => {
-          console.log(this.state.userId)
+          //console.log(this.state.userId)
           this.getListsFromDB();
         });
       } else {
         // No user is signed in.
-        console.log('user is NOT signed in');
+        //console.log('user is NOT signed in');
       }
     });
   }
@@ -53,9 +52,9 @@ class Home extends Component {
   getListsFromDB() {
     // run this after making sure user is signed in
     // get reference to firebase db
-    console.log(this.state.userId)
+    //console.log(this.state.userId)
     const todosDB = firebase.database().ref('todos/' + this.state.userId);
-    console.log(todosDB)
+    //console.log(todosDB)
     // setup firebase event watcher
     // fires anytime a change is detected in todosDB
     todosDB.on('value', (snapshot) => {
@@ -91,8 +90,11 @@ class Home extends Component {
 
     // get reference to firebase db
     const db = firebase.database().ref('todos/' + this.state.userId);
-     
-    db.set(tempLists)
+    
+    if(this.state.userSignedIn) {
+      db.set(tempLists)
+    } 
+    
       //.then(res => {
       //  let key = res.getKey();
       //  firebase.database().ref().child('/todos/' + key)
@@ -119,7 +121,10 @@ class Home extends Component {
       if(list.listKey === newNote.onListKey) {
         list.notes.push(newNote)
         const db = firebase.database().ref('/todos/' + this.state.userId);
-        db.set(allLists)
+        
+        if(this.state.userSignedIn) {
+          db.set(allLists)
+        } 
       }
     })
   }
@@ -146,7 +151,10 @@ class Home extends Component {
     let allLists = this.state.lists;
     
     const db = firebase.database().ref('todos/' + this.state.userId);
-    db.set(allLists)
+
+    if(this.state.userSignedIn) {
+      db.set(allLists)
+    } 
     /*
 
     // update
@@ -158,23 +166,32 @@ class Home extends Component {
 
   completedNote = (key) => {
     // callback for completing a todo
-    
-    let todo = this.state.todos.find(function (item, index) { 
-      item.index = index;
-      return item.key === key; 
-    });
-   
+
+    // find which todo was selected
+    // and get its indexes
+    let selectedNote;
+    let listIndex;
+    let noteIndex;
+    this.state.lists.forEach((list, index) => {
+      list.notes.forEach((note, note_index) => {
+        if(note.key === key) {
+          selectedNote = note;
+          listIndex = index;
+          noteIndex = note_index;
+        }
+      })
+    })
+
     // toggle completed
     let isCompleted;
-    if(todo.completed === true) {
+    if(selectedNote.completed === true) {
       isCompleted = false;
     } else {
       isCompleted = true;
     }
 
-    // set updated completed state to db
-    let dbKey = todo.dbKey;
-    firebase.database().ref().child('/todos/' + dbKey)
+
+    firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
       .update({ completed: isCompleted});
   }
 
@@ -235,6 +252,41 @@ class Home extends Component {
   }
 
   saveEdit = (data) => {
+    console.log(data)
+    let key = data.key;
+    // callback for saving changes to a note
+
+    let selectedNote;
+    let listIndex;
+    let noteIndex;
+    this.state.lists.forEach((list, index) => {
+      list.notes.forEach((note, note_index) => {
+        if(note.key === key) {
+          selectedNote = note;
+          listIndex = index;
+          noteIndex = note_index;
+        }
+      })
+    })
+
+
+    // toggle completed
+    let isCompleted;
+    if(selectedNote.completed === true) {
+      isCompleted = false;
+    } else {
+      isCompleted = true;
+    }
+
+    // set editable to false
+    let allLists = this.state.lists;
+    allLists[listIndex].notes[noteIndex].editable = false;
+    this.setState({lists: allLists});
+
+    firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
+      .update({ todoText: data.value, editable: false});
+
+    /*
     // update state w/ new note text and turn off editing
     let todo = this.state.todos.find(function (item, index) { 
       item.index = index;
@@ -242,10 +294,10 @@ class Home extends Component {
     });
 
     let key = todo.dbKey;
-    firebase.database().ref().child('/todos/' + key)
+    firebase.database().ref().child('/todos/' + this.state.userId + key)
       .update({ todoText: data[0], editable: false});
     
- 
+    */
   }
 
   toggleFilteringComplete = () => {
@@ -265,7 +317,10 @@ class Home extends Component {
     // data is new list order
     const db = firebase.database().ref('todos/' + this.state.userId);
     //console.log(data)
-    db.set(data)
+    if(this.state.userSignedIn) {
+      db.set(data)
+    } 
+    
   }
 
   changeViewLayout = (data) => {
@@ -295,6 +350,9 @@ class Home extends Component {
   render() {
       return (
         <div className="homeContainer">
+          {!this.state.userSignedIn && 
+            <div className="notSignedInAlert">You are not signed in. Any notes created now will not be saved to the database.</div>
+          }
           <TopNav userSignedOut={this.userSignedOut}/>
           <NewList 
             createNewList={this.createNewList} 

@@ -7,39 +7,42 @@ class Note extends Component {
 
     this.state = {
       tempNote: this.props.tempNote,
+      activeNoteText: null,
     };
   }
 
-
-  handleChange = (event) => {
-    // keep track of input in state
-    this.setState({newNoteName: event.target.value});
-    //console.log('test')
+  editedNote = (event) => {
+    //console.log(event.target.value)
+    let data = {
+      key: event.target.dataset.notekey,
+      value: event.target.value
+    }
+    //this.props.editedNote(data);
+    this.setState({activeNoteText: data.value})
   }
 
-  handleSubmit = (event) => {
-    
-    event.preventDefault();
-
-    //console.log('testing')
-
-    // on submit use the new note state data
-    // to send it up to the parent componenet
-    // to be added to all todos
-
+  handleSave = (event) => {
     let data = {
-      thisListKey: this.props.listKey,
-      note: this.state.newNoteName,
+      value: this.state.activeNoteText,
+      key: event.target.dataset.notekey,
     }
-    this.props.createNewNote(data);
-
-    // reset note value
-    this.setState({newNoteName: ''});
+    this.props.handleSave(data)
   }
 
   render() {
     return (
-      <textarea key={(this.props.note.key + 'textArea')} disabled={this.props.note.editable ? false : true} className={(this.props.note.completed ? 'todoTextFaded' : 'todoText') + ' ' + (this.props.note.editable ? 'editingTodo' : null)} defaultValue={this.props.note.editable ? this.state.tempNote : this.props.note.todoText} onChange={this.editedNote} ></textarea>
+      <div>
+        <textarea 
+          key={(this.props.note.key + 'textArea')} 
+          disabled={this.props.note.editable ? false : true} 
+          className={(this.props.note.completed ? 'todoTextFaded' : 'todoText') + ' ' + (this.props.note.editable ? 'editingTodo' : null)} 
+          defaultValue={this.props.note.editable ? this.state.tempNote : this.props.note.todoText} 
+          onChange={this.editedNote}
+          data-notekey={this.props.note.key}
+        >
+        </textarea>
+        <div data-notekey={this.props.note.key} onClick={this.handleSave}>save</div>
+      </div>
     )
   }
 };

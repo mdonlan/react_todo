@@ -38,11 +38,12 @@ class CardView extends Component {
       allLists: this.props.allLists,
       isLoadingLists: this.props.isLoadingLists,
       viewType: false,
+      activeNoteValue: null,
     };
   }
 
   componentDidMount() {
-    console.log(this.props)
+    //console.log(this.props)
   }
 
   componentWillReceiveProps(nextProps, props) {
@@ -82,19 +83,36 @@ class CardView extends Component {
   }
 
   saveEdit = (event) => {
-    // send new edit to parent to be added to state
-    let tempEditData = [
-      this.state.tempNote, 
-      event.target.dataset.key,
-    ]
-   this.props.saveEdit(tempEditData);
 
-   //after updating note text clear tempNote
-   this.setState({tempNote: ''});
+  let key = event.key;
+  // this converts the nodelist returned by querySelectorAll into an array
+  let todoTextElem = [...document.querySelectorAll(".todoText")];
+  console.log(todoTextElem)
+
+  let todoEditedValue;
+  // find element that was changed
+  todoTextElem.forEach((todo) => {
+    if(todo.dataset.notekey === key) {
+      // found correct note
+      todoEditedValue = todo.innerHTML; 
+    }
+  });
+
+  // send new edit to parent to be added to state
+  let newData = {
+    key: event.target.dataset.key,
+    value: todoEditedValue,
   }
 
-  editedNote = (event) => {
-    this.setState({tempNote: event.target.value});
+  this.props.saveEdit(newData);
+
+   //after updating note text clear tempNote
+   //this.setState({tempNote: ''});
+  }
+
+  editedNote = (data) => {
+    //this.setState({tempNote: value})
+    //console.log(data)
   }
 
   createNewNote = (data) => {
@@ -123,6 +141,11 @@ class CardView extends Component {
     }
   }
 
+  handleSave = (data) => {
+    //this.saveEdit(data)
+    this.props.saveEdit(data);
+  }
+
   filterNotes = (note) => {
     if(note !== 'empty') {
       return note
@@ -145,8 +168,8 @@ class CardView extends Component {
         // this prevents lists w/out any notes from causing error w/ filtering undefined
         value.notes = [];
       }
-      return (
-        <div className="listCV">
+      return ( 
+        <div className="listCV" key={value.listKey}>
           <div className="top">
             <div className="title listTitle">{value.listTitle}</div>
             <FontAwesomeIcon className="dragButton" icon={faDrag} />
@@ -169,7 +192,9 @@ class CardView extends Component {
                   </div>
                   <Note
                     note={note}    
-                    tempNote={this.state.tempNote}              
+                    tempNote={this.state.tempNote} 
+                    editedNote={this.editedNote}    
+                    handleSave={this.handleSave}         
                   />
                 </div>
                 <div className="rightSideTodo">
@@ -183,34 +208,30 @@ class CardView extends Component {
                 </div>
               </div>
             )
-        
-      })}
+          })}
         </div>
       ); 
     })
                                      
     const SortableList = SortableContainer(({items}) => {
+        let listItems = items.map((item, index) => {
+              return <SortableItem key={`item-${index}`} index={index} value={item} />;
+            })
         return (
           <div className="listsContainerCV">
-            {items.map((item, index) => {
-              return <SortableItem key={`item-${index}`} index={index} value={item} />;
-            })}
+            {listItems}
           </div>
         );
     });
 
     return (
       <div className="listsWrapperCardView">
-        {this.props.isLoadingLists ?
         <SortableList 
           items={this.state.allLists.filter(this.filterLists)} 
           onSortEnd={this.onSortEnd} 
           axis='xy' 
           distance={10}
         />
-        :
-        <div className="loadingContainer"></div>
-      }
       </div>
     )
   }

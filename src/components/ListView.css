@@ -1,13 +1,13 @@
 .listViewContainer {
-  height: 100%;
+  height: 700px;
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .listViewLeftSection {
-  height: 600px;
-  width: 150px;
+  height: 100%;
+  width: 15%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -32,8 +32,8 @@
 }
 
 .activeNoteContainer {
-  height: 600px;
-  width: 900px;
+  height: 100%;
+  width: 85%;
   display: flex;
   flex-direction: column;
   align-items: center;

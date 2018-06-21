@@ -45,7 +45,7 @@ class Note extends Component {
       noteKey: event.target.dataset.notekey,
       listKey: event.target.dataset.listkey,
     }
-    
+    console.log(data)
     this.props.setEditMode(data);
     //this.setState({tempNote: event.target.dataset.text});
   };

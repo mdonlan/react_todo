@@ -162,7 +162,7 @@ class CardView extends Component {
             let isEditable = note.editable;
         
             return (
-              <div key={note.key}>
+              <div key={note.key} className="noteContainer">
                 {this.props.filteringCompleted && note.completed === false && 
                   <Note
                     note={note}    
@@ -210,6 +210,8 @@ class CardView extends Component {
           onSortEnd={this.onSortEnd} 
           axis='xy' 
           distance={10}
+          transitionDuration={300}
+          helperClass="draggingList"
         />
       </div>
     )

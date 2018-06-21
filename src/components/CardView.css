@@ -24,7 +24,7 @@
   */
   
   height: 500px;
-  width: 400px;
+  width: 350px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,10 +34,8 @@
   color: #dddddd;
   font-family: 'Tajawal', sans-serif;
   font-size: 18px;
-  background: #0d2c66ee;
-  -webkit-box-shadow: 0px 0px 25px 0px rgba(17,17,17,1);
-  -moz-box-shadow: 0px 0px 25px 0px rgba(17,17,17,1);
-  box-shadow: 0px 0px 25px 0px rgba(17,17,17,1);
+  background: #1c2331;
+  box-shadow: 0px 0px 25px 3px rgba(17,17,17,1);
 }
 
 .listTitle {
@@ -52,7 +50,7 @@
 
 .leftSideTodo {
   height: 100%;
-  width: 50%;
+  width: 80%;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -61,7 +59,7 @@
 
 .rightSideTodo {
   height: 100%;
-  width: 50%;
+  width: 20%;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -89,10 +87,12 @@ textarea {
 
 .todoText {
   opacity: 1;
+  width: 100%;
 }
 
 .todoTextFaded {
   opacity: 0.2;
+  width: 100%;
 }
 
 .button {
@@ -145,13 +145,35 @@ textarea {
   width: 100%;
   display: flex;
   justify-content: center;
+  border-bottom: 1.5px solid #dddddd;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.top:hover {
+
 }
 
 .dragButton {
   position: absolute;
   right: 5px;
   top: 5px;
-  cursor: pointer;
+  cursor: grab;
+}
+
+.draggingList {
+  /* this class is given to the element that is being dragged */
+  
+  -webkit-box-shadow: 0px 0px 25px 0px rgba(131, 131, 131, 0.74);
+  -moz-box-shadow: 0px 0px 25px 0px rgba(131, 131, 131, 0.74);
+  box-shadow: 0px 0px 25px 0px rgba(131, 131, 131, 0.74);
+  opacity: 0.8;
+}
+
+.noteContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 

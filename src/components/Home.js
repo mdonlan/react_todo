@@ -7,6 +7,7 @@ import CardView from './CardView';
 import ListView from './ListView';
 import TodoFilters from './TodoFilters';
 import TopNav from './TopNav';
+import Loading from './Loading';
 
 import './Home.css';
 
@@ -45,20 +46,95 @@ class Home extends Component {
       } else {
         // No user is signed in.
         //console.log('user is NOT signed in');
+
+        // if user is not signed in show demo data
+        let data = this.generateDemoData();
+        this.setState({ lists: data })
+        this.setState({isLoadingLists: false});
       }
     });
+  };
+
+  generateDemoData() {
+    // random lists and notes for demo purposes
+    let data = [
+      {
+        created: "Tuesday, June 19th 2018, 4:02:30 pm",
+        editable: false,
+        listKey: "__BJJvxcvbyDWm",
+        listTitle: "Food Shopping",
+        visible: true,
+        notes: [
+          {
+            completed: false,
+            created: "Tuesday, June 19th 2018, 10:59:28 pm",
+            editable: false,
+            key: "_S1tGQSvW7",
+            onListKey: "__BJJvxcvbyDWm",
+            todoText: "Pasta",
+            visible: true,
+          },
+          {
+            completed: false,
+            created: "Tuesday, June 19th 2018, 10:59:28 pm",
+            editable: false,
+            key: "S_1tGQSvW7",
+            onListKey: "__BJJvxcvbyDWm",
+            todoText: "Milk",
+            visible: true,
+          },
+          {
+            completed: false,
+            created: "Tuesday, June 19th 2018, 10:59:28 pm",
+            editable: false,
+            key: "S1_tGQSvW7",
+            onListKey: "__BJJvxcvbyDWm",
+            todoText: "Chicken",
+            visible: true,
+          },
+        ],
+      },
+      {
+        created: "Tuesday, June 19th 2018, 4:02:30 pm",
+        editable: false,
+        listKey: "BJJvbyDWm",
+        listTitle: "Work Todo",
+        visible: true,
+        notes: [
+          {
+            completed: false,
+            created: "Tuesday, June 19th 2018, 10:59:28 pm",
+            editable: false,
+            key: "S1t_GQSvW7",
+            onListKey: "BJJvbyDWm",
+            todoText: "Email Mark the quotes",
+            visible: true,
+          },
+          {
+            completed: false,
+            created: "Tuesday, June 19th 2018, 10:59:28 pm",
+            editable: false,
+            key: "S1tG_QSvW7",
+            onListKey: "BJJvbyDWm",
+            todoText: "Meeting on Tuesday @ 5",
+            visible: true,
+          }
+        ],
+      },
+    ]
+    return data
   }
 
   getListsFromDB() {
     // run this after making sure user is signed in
     // get reference to firebase db
     //console.log(this.state.userId)
+    this.setState({isLoadingLists: true});
     const todosDB = firebase.database().ref('todos/' + this.state.userId);
     //console.log(todosDB)
     // setup firebase event watcher
     // fires anytime a change is detected in todosDB
     todosDB.on('value', (snapshot) => {
-      this.setState({isLoadingLists: true});
       let lists = snapshot.val();
       let allLists = [];
       if(lists) {
@@ -68,6 +144,7 @@ class Home extends Component {
           allLists.push(lists[obj])
         });
         this.setState({ lists: allLists })
+        this.setState({isLoadingLists: false});
       }
     });
   }
@@ -154,7 +231,9 @@ class Home extends Component {
 
     if(this.state.userSignedIn) {
       db.set(allLists)
-    } 
+    }  else {
+      
+    }
     /*
 
     // update
@@ -165,7 +244,6 @@ class Home extends Component {
   }
 
   completedNote = (key) => {
-    console.log(key)
     // callback for completing a todo
 
     // find which todo was selected
@@ -174,7 +252,6 @@ class Home extends Component {
     let listIndex;
     let noteIndex;
     this.state.lists.forEach((list, index) => {
-      console.log(list)
       list.notes.forEach((note, note_index) => {
         if(note.key === key) {
           selectedNote = note;
@@ -192,9 +269,24 @@ class Home extends Component {
       isCompleted = true;
     }
 
-
-    firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
+    // if user is signed in then update in db
+    // if NOT signed in update locally
+    if(this.state.userSignedIn) {
+      firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
       .update({ completed: isCompleted});
+    } else {
+      let lists = this.state.lists;
+      let itemToUpdate = lists[listIndex].notes[noteIndex];
+      if(itemToUpdate.completed) {
+        itemToUpdate.completed = false;
+      } else {
+        itemToUpdate.completed = true;
+      }
+
+      this.setState({lists: lists})
+      
+    }
+    
   }
 
   setEditMode = (data) => {
@@ -208,6 +300,7 @@ class Home extends Component {
       item.index = index;
       return item.listKey === data.listKey;
     })
+    console.log(list)
 
     let note = list.notes.find(function(item, index) {
       item.index = index;
@@ -352,7 +445,7 @@ class Home extends Component {
       searchQuery: '',
       lists: [],
       isLoadingLists: false,
-      cardView: false,
+      cardView: true,
       userSignedIn: false,
       userId: null,
     });
@@ -363,7 +456,7 @@ class Home extends Component {
       return (
         <div className="homeContainer">
           {!this.state.userSignedIn && 
-            <div className="notSignedInAlert">You are not signed in. Any notes created now will not be saved to the database.</div>
+            <div className="notSignedInAlert">Warning! You are not signed in. Any notes created will not be saved.</div>
           }
           <TopNav 
             userSignedOut={this.userSignedOut}
@@ -413,6 +506,9 @@ class Home extends Component {
               cardView={this.state.cardView}
             />}
           </div>
+          {this.state.isLoadingLists &&
+            <Loading />
+          }
         </div>
       )
   }

@@ -38,6 +38,11 @@ class TopNav extends Component {
   handleSignupClick = () => {
     this.setState({displaySignup: true});
     this.setState({displaySignIn: false});
+    setTimeout(() => {
+      let signupElem = document.querySelector(".signupContainer");
+      signupElem.style.top = 'calc(50% - 325px)';
+      signupElem.style.transition = '1s';
+    }, 50)
   };
 
   handleSignOutClick = () => {
@@ -53,6 +58,11 @@ class TopNav extends Component {
   handleSignInClick = () => {
     this.setState({displaySignIn: true});
     this.setState({displaySignup: false});
+    setTimeout(() => {
+      let signInElem = document.querySelector(".signInContainer");
+      signInElem.style.top = 'calc(50% - 325px)';
+      signInElem.style.transition = '1s';
+    }, 50)
   };
 
   hideSignup = () => {

@@ -201,7 +201,9 @@ class Home extends Component {
         
         if(this.state.userSignedIn) {
           db.set(allLists)
-        } 
+        } else {
+          this.setState({lists: allLists})
+        }
       }
     })
   }
@@ -214,8 +216,10 @@ class Home extends Component {
     // and update the db notes
 
     // finds correct list based on dbListKey
-    let list = this.state.lists.find(function (item) { 
-      return item.listKey === data.listKey;
+    let list = this.state.lists.find(function (item, listIndex) { 
+      if(item.listKey === data.listKey) {
+        return item
+      }
     });
 
     // find which note to remove
@@ -232,7 +236,7 @@ class Home extends Component {
     if(this.state.userSignedIn) {
       db.set(allLists)
     }  else {
-      
+      this.setState({lists: allLists})
     }
     /*
 
@@ -378,15 +382,20 @@ class Home extends Component {
     allLists[listIndex].notes[noteIndex].editable = false;
     this.setState({lists: allLists});
 
-    // check if being passed null data
-    // this can happen if the user clicked edit and 
-    //then clicked save without changing anything
-    if(data.value) {
-      firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
-        .update({ todoText: data.value, editable: false});
+    if(this.state.userSignedIn) {
+      // check if being passed null data
+      // this can happen if the user clicked edit and 
+      //then clicked save without changing anything
+      if(data.value) {
+        firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
+          .update({ todoText: data.value, editable: false});
+      } else {
+        firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
+          .update({editable: false});
+      }
     } else {
-      firebase.database().ref().child('/todos/' + this.state.userId + '/' + listIndex + '/notes/' + noteIndex)
-        .update({editable: false});
+      allLists[listIndex].notes[noteIndex].todoText = data.value;
+      this.setState({lists: allLists});
     }
 
     
@@ -456,7 +465,7 @@ class Home extends Component {
       return (
         <div className="homeContainer">
           {!this.state.userSignedIn && 
-            <div className="notSignedInAlert">Warning! You are not signed in. Any notes created will not be saved.</div>
+            <div className="notSignedInAlert">Warning! You are not signed in. Any changes will not be saved.</div>
           }
           <TopNav 
             userSignedOut={this.userSignedOut}
